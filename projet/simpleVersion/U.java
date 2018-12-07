@@ -62,4 +62,76 @@ public class U {
 		writer.close();
 		reader.close();
 	}
+	public static void chat33(Socket socket, BufferedReader keyboard, String otherSide, boolean sendFirst) throws IOException {
+		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+		BufferedReader reader =
+			new BufferedReader(
+				new InputStreamReader(
+					socket.getInputStream()));
+		String toWrite;
+		String received;
+		System.out.println("--- New conversation.");
+		if (!sendFirst) { // receive first
+			System.out.println("Waiting for " + otherSide + " to start the conversation...");
+			received = reader.readLine();
+			System.out.println(otherSide + " said: " + received);
+		}
+		
+		while (true){ // send then receive one message
+			System.out.print("myself: ");
+			toWrite = keyboard.readLine();
+			if (toWrite == null || toWrite.compareTo("bye") == 0) {
+				System.out.println("--- End of conversation.");
+				break;
+			}
+			writer.println(toWrite);
+			System.out.println("waiting");
+			received = reader.readLine();
+			if (received == null || received.compareTo("bye") == 0) {
+				System.out.println("--- " + otherSide + " ended the conversation.");
+				break;
+			}
+			System.out.println(otherSide + " said: " + received);
+		}
+		writer.close();
+		reader.close();
+	}
+	
+	public static void chat3(Socket socket, BufferedReader keyboard, String otherSide, boolean sendFirst) throws IOException {
+		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+		BufferedReader reader =
+			new BufferedReader(
+				new InputStreamReader(
+					socket.getInputStream()));
+		String toWrite;
+		String received;
+		boolean doSend;
+		System.out.println("--- New conversation.");
+		if (!sendFirst) { // send first message only after having received one first
+			System.out.println("--- Waiting for " + otherSide + " to start the conversation...");
+			doSend = false;
+		}
+		else doSend = true;
+		
+		while (true){
+			if (doSend) {  // send then receive one message
+				System.out.print("myself: ");
+				toWrite = keyboard.readLine();
+				if (toWrite == null || toWrite.compareTo("bye") == 0) {
+					System.out.println("--- End of conversation.");
+					break;
+				}
+				writer.println(toWrite);
+			}
+			else doSend = true; // skip sending the first message, but next time: do send a message
+			received = reader.readLine();
+			if (received == null || received.compareTo("bye") == 0) {
+				System.out.println("--- " + otherSide + " ended the conversation.");
+				break;
+			}
+			System.out.println(otherSide + " said: " + received);
+		}
+		writer.close();
+		reader.close();
+	}
 }

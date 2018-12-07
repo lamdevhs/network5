@@ -52,7 +52,10 @@ public class Client {
 //	}
 	
 	private void chat2() throws IOException {
+		BufferedReader keyboard =
+				new BufferedReader(
+					new InputStreamReader(System.in));
 		System.out.println("client started chat");
-		U.chat2(socket, true);
+		U.chat3(socket, keyboard, "server", false);
 	}
 }

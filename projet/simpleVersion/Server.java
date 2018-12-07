@@ -1,17 +1,19 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketImpl;
 
 public class Server {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		System.out.println("server here");
 		Server s = new Server(4444);
 	}
 	
 	ServerSocket socket;
-	Server(int port){
+	Server(int port) throws IOException{
 		try {
 			socket = new ServerSocket(port);
 		}
@@ -20,20 +22,25 @@ public class Server {
 			System.exit(-1);
 		}
 		System.out.println("listening: " + socket.getInetAddress().toString() + " - port " + port);
-		while (this.nextChat());
+		BufferedReader keyboard =
+				new BufferedReader(
+					new InputStreamReader(System.in));
+		while (this.nextChat(keyboard));
+		keyboard.close();
 	}
 	
-	public boolean nextChat(){
+	public boolean nextChat(BufferedReader keyboard){
 		boolean cont = true;
 		Socket clientSocket = null;
 		try {
-			System.out.println("Waiting to connect");
+			System.out.println("Waiting for new client...");
 			clientSocket = socket.accept();
 			System.out.println("Chat started");
-			U.chat2(clientSocket, true);
+			U.chat3(clientSocket, keyboard, "client", true);
 		}
 		catch(IOException e){
-			System.out.println("Failure to connect");
+			e.printStackTrace();
+			System.out.println("IO Fatal Error while handling a connection.");
 		}
 		return cont;
 	}
