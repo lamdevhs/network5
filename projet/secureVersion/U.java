@@ -1,32 +1,13 @@
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.Base64;
 
 public class U {
-	public static InetAddress ipFromName(String who){
-		InetAddress address = null;
-		try {
-			address = InetAddress.getByName(who);
-		} catch (UnknownHostException e) {
-			
-		}
-		return address;
-	}
-	
 	public static void chat(Socket socket, BufferedReader keyboard, String otherSide, boolean sendFirst) throws IOException {
 		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 		BufferedReader reader =
@@ -111,10 +92,10 @@ public class U {
 			return false; // break loop of conversation
 		}
 		else {
-			//byte[] encrypted = security.encrypt(written);
-			byte[] encrypted = written.getBytes(); // security.encrypt(written);
-			System.out.println("--> sending: " + Arrays.toString(encrypted));
-			writer.println(new String(encrypted));
+			byte[] encrypted = security.encrypt(written.getBytes());
+			String toSend = U.toBase64(encrypted);
+			System.out.println("--> sending: " + toSend);
+			writer.println(toSend);
 			return true;
 		}
 
@@ -128,12 +109,20 @@ public class U {
 			return false; // break loop of conversation
 		}
 		else {
-			System.out.println(otherSide + " sent: " + Arrays.toString(received.getBytes()));
-			//byte[] decrypted = security.decrypt(received);
-			byte[] decrypted = received.getBytes();
+			System.out.println(otherSide + " sent: " + received);
+			byte[] encrypted = U.fromBase64(received);
+			byte[] decrypted = security.decrypt(encrypted);
 			System.out.println(otherSide + " said: " + new String(decrypted));
 			return true;
 		}
+	}
+	
+	public static String toBase64(byte[] str) {
+		return Base64.getEncoder().encodeToString(str);
+	}
+	
+	public static byte[] fromBase64(String str) {
+		return Base64.getDecoder().decode(str);
 	}
 	
 	public static void writeToFile(String path, String content) throws IOException {

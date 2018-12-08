@@ -1,22 +1,21 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketImpl;
 
 public class Server {
 	public static void main(String[] args){
-		//Server s = new Server(args[1]);
-		Server s = new Server("4444");
+		new Server(args[1], args[2]);
 	}
 	
 	ServerSocket socket;
-	Server(String port_str){
+	Server(String port_str, String key_filepath){
 		System.out.println("Starting Chatty Server.");
 		int port;
+		Security security = null;
 		try {
+			security = new Security(key_filepath);
 			port = Integer.parseInt(port_str);
 			socket = new ServerSocket(port);
 			System.out.println("Listening: " + socket.getInetAddress().toString() + " - port " + port);
@@ -28,7 +27,6 @@ public class Server {
 		BufferedReader keyboard =
 				new BufferedReader(
 					new InputStreamReader(System.in));
-		Security security = new Security();
 		while (true) this.secureChat(security, keyboard);
 		//keyboard.close();
 	}

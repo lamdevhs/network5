@@ -1,4 +1,4 @@
-import java.io.IOException;
+
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -10,7 +10,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
 
 
 
@@ -18,8 +17,9 @@ public class Security {
 	Key key;
 	Cipher cipher;
 	
-	Security(){
+	Security(String key_filepath){
 		try {
+			key = KeyMaker.loadKey(key_filepath);
 			cipher = Cipher.getInstance("AES");
 		} catch (Exception e) {
 			System.out.println("Unexpected Fatal Error.");
@@ -28,8 +28,7 @@ public class Security {
 		}
 	}
 	
-	public byte[] crypt(String message, int mode){
-		byte[] input = message.getBytes();
+	public byte[] crypt(byte[] input, int mode){
 		byte[] output = null;
 		try {
 			cipher.init(mode, key);
@@ -42,58 +41,21 @@ public class Security {
 		return output;
 	}
 	
-	public byte[] encrypt(String message){
+	public byte[] encrypt(byte[] message){
 		return crypt(message, Cipher.ENCRYPT_MODE);
+		
 	}
 	
-	public byte[] decrypt(String message){
+	public byte[] decrypt(byte[] message){
 		return crypt(message, Cipher.DECRYPT_MODE);
 	}
 	
-	public static Key newKey() throws NoSuchAlgorithmException {
-		return KeyGenerator.getInstance("AES").generateKey();
-	}
-	
-	public static String keyToString(Key key) {
-		return Base64.getEncoder().encodeToString(key.getEncoded());
-	}
-	
-	public static Key stringToKey(String str) {
-		byte[] decoded = Base64.getDecoder().decode(str);
-		return new SecretKeySpec(decoded, 0, decoded.length, "AES");
-	}
-	
-	public static void saveKey(String path, Key key) {
-		try {
-			U.writeToFile(path, Security.keyToString(key));
-			System.out.println("New key saved to " + path + ".");
-		} catch (Exception e) {
-			System.out.println("Fatal Error trying to save the new key to file.");
-			e.printStackTrace();
-			System.exit(-1);
-		}
-	}
-	
-	public static Key loadKey(String path) {
-		Key k = null;
-		try {
-			String keystr = U.readFile(path);
-			System.out.println("Reading key from " + path + ".");
-			k = Security.stringToKey(keystr);
-		} catch (Exception e) {
-			System.out.println("Fatal Error trying to read the key from file.");
-			e.printStackTrace();
-			System.exit(-1);
-		}
-		return k;
-	}
-	
-	public static void main(String[] args) throws Exception {
-		Key myKey = Security.newKey();
+	public static void main2(String[] args) throws Exception {
+		Key myKey = KeyMaker.newKey();
 		System.out.println(Base64.getEncoder().encodeToString(myKey.getEncoded()));
-		System.out.println(Security.keyToString(Security.stringToKey(Security.keyToString(myKey))));
-		Security.saveKey("testfile", myKey);
-		Key k2 = Security.loadKey("testfile");
+		System.out.println(KeyMaker.keyToString(KeyMaker.stringToKey(KeyMaker.keyToString(myKey))));
+		KeyMaker.saveKey("testfile", myKey);
+		Key k2 = KeyMaker.loadKey("testfile");
 		System.out.println(Base64.getEncoder().encodeToString(k2.getEncoded()));
 		
 		byte[] data;
@@ -126,5 +88,32 @@ public class Security {
 		cipher.init(Cipher.DECRYPT_MODE, key);
 		original = cipher.doFinal(result);
 		System.out.println("Decrypted: " + new String(original));
+	}
+	
+	public static void main(String[] args) {
+		String message = "Hello world";
+		byte[] result;
+		
+		
+		Security sec = new Security("aeskey.txt");
+		result = sec.encrypt(message.getBytes());
+		
+		System.out.println(U.toBase64(result));
+		//original = sec.decrypt(new String(result));
+		System.out.println(Arrays.toString(result));
+		String encoded = U.toBase64(result);
+		byte[] decoded = Base64.getDecoder().decode(encoded);
+		System.out.println();
+		byte[] input = decoded;
+		byte[] output = null;
+		try {
+			sec.cipher.init(Cipher.DECRYPT_MODE, sec.key);
+			output = sec.cipher.doFinal(input);
+		} catch (Exception e) {
+			System.out.println("Unexpected Fatal Error.");
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		System.out.println(new String(output));
 	}
 }
