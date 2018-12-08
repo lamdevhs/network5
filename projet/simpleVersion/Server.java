@@ -7,41 +7,42 @@ import java.net.Socket;
 import java.net.SocketImpl;
 
 public class Server {
-	public static void main(String[] args) throws IOException {
-		System.out.println("server here");
-		Server s = new Server(4444);
+	public static void main(String[] args){
+		Server s = new Server(args[1]);
 	}
 	
 	ServerSocket socket;
-	Server(int port) throws IOException{
+	Server(String port_str){
+		System.out.println("Starting Chatty Server.");
+		int port;
 		try {
+			port = Integer.parseInt(port_str);
 			socket = new ServerSocket(port);
+			System.out.println("Listening: " + socket.getInetAddress().toString() + " - port " + port);
 		}
 		catch(IOException e){
-			System.out.println("error server couldn start");
+			System.out.println("Fatal Error: server couldn't be started.");
 			System.exit(-1);
 		}
-		System.out.println("listening: " + socket.getInetAddress().toString() + " - port " + port);
 		BufferedReader keyboard =
 				new BufferedReader(
 					new InputStreamReader(System.in));
-		while (this.nextChat(keyboard));
-		keyboard.close();
+		while (true) this.chat(keyboard);
+		//keyboard.close();
 	}
 	
-	public boolean nextChat(BufferedReader keyboard){
-		boolean cont = true;
+	public void chat(BufferedReader keyboard){
 		Socket clientSocket = null;
 		try {
-			System.out.println("Waiting for new client...");
+			System.out.print("Waiting for client to connect... ");
 			clientSocket = socket.accept();
-			System.out.println("Chat started");
-			U.chat3(clientSocket, keyboard, "client", true);
+			System.out.println("Connection with client established.");
+			U.chat(clientSocket, keyboard, "client", true);
 		}
 		catch(IOException e){
+			System.out.println("Fatal Error: Unexpected IO Error.");
 			e.printStackTrace();
-			System.out.println("IO Fatal Error while handling a connection.");
+			System.exit(-1);
 		}
-		return cont;
 	}
 }

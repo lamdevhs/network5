@@ -18,120 +18,55 @@ public class U {
 		return address;
 	}
 	
-	public static void chat(PrintWriter write, BufferedReader read, Scanner keyboard, boolean sendFirst) throws IOException {
-		String toWrite;
-		String received;
-		if (sendFirst){
-			toWrite = keyboard.nextLine();
-			write.println(toWrite);
-		}
-		while (true) {
-			toWrite = keyboard.nextLine();
-			received = read.readLine();
-			write.println(toWrite);
-		}
-	}
-	public static void chat2(Socket socket, boolean sendFirst) throws IOException {
-		BufferedReader keyboard =
-			new BufferedReader(
-				new InputStreamReader(System.in));
+	public static void chat(Socket socket, BufferedReader keyboard, String otherSide, boolean sendFirst) throws IOException {
 		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 		BufferedReader reader =
 			new BufferedReader(
 				new InputStreamReader(
 					socket.getInputStream()));
-		String toWrite;
-		String received;
-		if (sendFirst &&
-				(toWrite = keyboard.readLine()) != null){
-			writer.println(toWrite);
-			System.out.println("waiting");
-			received = reader.readLine();
-			System.out.println("[RECEIVED] " + received);
+		System.out.println("--- New conversation.");
+		if (sendFirst) { // send a message before receiving
+			while (
+					U.sendMessage(keyboard, writer) &&
+					U.receiveMessage(reader, otherSide)
+				);
 		}
 		else {
-			received = reader.readLine();
-			System.out.println("[RECEIVED] " + received);
-		}
-		while ((toWrite = keyboard.readLine()) != null) {
-			received = reader.readLine();
-			System.out.println("[RECEIVED] " + received);
-			writer.println(toWrite);
-		}
-		keyboard.close();
-		writer.close();
-		reader.close();
-	}
-	public static void chat33(Socket socket, BufferedReader keyboard, String otherSide, boolean sendFirst) throws IOException {
-		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-		BufferedReader reader =
-			new BufferedReader(
-				new InputStreamReader(
-					socket.getInputStream()));
-		String toWrite;
-		String received;
-		System.out.println("--- New conversation.");
-		if (!sendFirst) { // receive first
 			System.out.println("Waiting for " + otherSide + " to start the conversation...");
-			received = reader.readLine();
-			System.out.println(otherSide + " said: " + received);
-		}
-		
-		while (true){ // send then receive one message
-			System.out.print("myself: ");
-			toWrite = keyboard.readLine();
-			if (toWrite == null || toWrite.compareTo("bye") == 0) {
-				System.out.println("--- End of conversation.");
-				break;
-			}
-			writer.println(toWrite);
-			System.out.println("waiting");
-			received = reader.readLine();
-			if (received == null || received.compareTo("bye") == 0) {
-				System.out.println("--- " + otherSide + " ended the conversation.");
-				break;
-			}
-			System.out.println(otherSide + " said: " + received);
+			while (
+					U.receiveMessage(reader, otherSide) &&
+					U.sendMessage(keyboard, writer)
+				);
 		}
 		writer.close();
 		reader.close();
 	}
 	
-	public static void chat3(Socket socket, BufferedReader keyboard, String otherSide, boolean sendFirst) throws IOException {
-		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-		BufferedReader reader =
-			new BufferedReader(
-				new InputStreamReader(
-					socket.getInputStream()));
-		String toWrite;
-		String received;
-		boolean doSend;
-		System.out.println("--- New conversation.");
-		if (!sendFirst) { // send first message only after having received one first
-			System.out.println("--- Waiting for " + otherSide + " to start the conversation...");
-			doSend = false;
+	public static boolean sendMessage(BufferedReader keyboard, PrintWriter writer) throws IOException {
+		String written; // message from the user of this side of the socket (the one executing this code)
+		System.out.print("myself: ");
+		written = keyboard.readLine();
+		if (written == null || written.compareTo("bye") == 0) {
+			System.out.println("--- End of conversation.");
+			return false; // break loop of conversation
 		}
-		else doSend = true;
-		
-		while (true){
-			if (doSend) {  // send then receive one message
-				System.out.print("myself: ");
-				toWrite = keyboard.readLine();
-				if (toWrite == null || toWrite.compareTo("bye") == 0) {
-					System.out.println("--- End of conversation.");
-					break;
-				}
-				writer.println(toWrite);
-			}
-			else doSend = true; // skip sending the first message, but next time: do send a message
-			received = reader.readLine();
-			if (received == null || received.compareTo("bye") == 0) {
-				System.out.println("--- " + otherSide + " ended the conversation.");
-				break;
-			}
+		else {
+			writer.println(written);
+			return true;
+		}
+
+	}
+	
+	public static boolean receiveMessage(BufferedReader reader, String otherSide) throws IOException {
+		String received; // message from the other side of the socket
+		received = reader.readLine();
+		if (received == null || received.compareTo("bye") == 0) {
+			System.out.println("--- " + otherSide + " ended the conversation.");
+			return false; // break loop of conversation
+		}
+		else {
 			System.out.println(otherSide + " said: " + received);
+			return true;
 		}
-		writer.close();
-		reader.close();
 	}
 }
