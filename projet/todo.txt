@@ -1,0 +1,6 @@
+- remove all global variables
+- fix Main (or delete it)
+- check simple version
+- create demos for simple version
+- write simple version's cr
+- write secure version's cr
