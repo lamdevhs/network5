@@ -22,37 +22,22 @@ public class Server {
 		}
 		catch(IOException e){
 			System.out.println("Fatal Error: server couldn't be started.");
+			e.printStackTrace();
 			System.exit(-1);
 		}
 		BufferedReader keyboard =
 				new BufferedReader(
 					new InputStreamReader(System.in));
-		while (true) this.secureChat(security, keyboard);
-		//keyboard.close();
+		while (true) this.chat(security, keyboard);
 	}
 	
-	public void chat(BufferedReader keyboard){
+	public void chat(Security security, BufferedReader keyboard){
 		Socket clientSocket = null;
 		try {
 			System.out.print("Waiting for client to connect... ");
 			clientSocket = socket.accept();
 			System.out.println("Connection with client established.");
-			U.chat(clientSocket, keyboard, "client", true);
-		}
-		catch(IOException e){
-			System.out.println("Fatal Error: Unexpected IO Error.");
-			e.printStackTrace();
-			System.exit(-1);
-		}
-	}
-	
-	public void secureChat(Security security, BufferedReader keyboard){
-		Socket clientSocket = null;
-		try {
-			System.out.print("Waiting for client to connect... ");
-			clientSocket = socket.accept();
-			System.out.println("Connection with client established.");
-			U.secureChat(security, clientSocket, keyboard, "client", true);
+			U.chat(security, clientSocket, keyboard, "client", true);
 		}
 		catch(IOException e){
 			System.out.println("Fatal Error: Unexpected IO Error.");

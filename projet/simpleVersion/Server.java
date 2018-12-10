@@ -8,7 +8,7 @@ import java.net.SocketImpl;
 
 public class Server {
 	public static void main(String[] args){
-		Server s = new Server(args[1]);
+		new Server(args[1]);
 	}
 	
 	ServerSocket socket;
@@ -22,6 +22,7 @@ public class Server {
 		}
 		catch(IOException e){
 			System.out.println("Fatal Error: server couldn't be started.");
+			e.printStackTrace();
 			System.exit(-1);
 		}
 		BufferedReader keyboard =

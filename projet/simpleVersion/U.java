@@ -8,16 +8,6 @@ import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class U {
-	public static InetAddress ipFromName(String who){
-		InetAddress address = null;
-		try {
-			address = InetAddress.getByName(who);
-		} catch (UnknownHostException e) {
-			
-		}
-		return address;
-	}
-	
 	public static void chat(Socket socket, BufferedReader keyboard, String otherSide, boolean sendFirst) throws IOException {
 		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 		BufferedReader reader =
