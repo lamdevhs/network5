@@ -24,29 +24,40 @@
     
     \section{Version Simple : Transmission des Messages en Clair}
     
-    La classe \code{Server} contient le code et la fonction \code{main} responsables du lancement du serveur. Cette fonction main attend un unique argument correspondant au port à utiliser pour les communications entre le serveur et le client. Une fois lancé, le serveur affiche quelques informations d'ordre général, puis se met en attente d'une connexion externe.
+    La classe \code{Server} contient le code et la fonction \code{main} responsables du lancement du serveur. Cette fonction main attend un unique argument correspondant au port à utiliser pour les communications entre le serveur et le client. Une fois lancé, le serveur affiche quelques informations d'ordre général, puis se met en attente d'une connexion externe. Exemple d'utilisation :
     
-    La classe \code{Client} est de même responsable de la partie client de la connexion. Les arguments de sa fonction \code{main} sont, dans cet ordre, l'adresse du serveur \emph{Chatty} auquel se connecter, et le numéro de port correspondant.
+    \code{\$ chattyServer 4444}
     
-    Une fois le client lancé avec l'adresse et le port du serveur, la communication est établie. Le serveur prend la parole en premier, envoie au client un message que l'utilisateur lui donne dans le terminal, puis se met en attente d'une réponse de la part du client. Le client, lui, commence par attendre un message en provenance du serveur. Après réception de celui-ci, le client sollicite son utilisateur pour envoyer un message de réponse au serveur.
+    La classe \code{Client} est de même responsable de la partie client de la connexion. Les arguments de sa fonction \code{main} sont, dans cet ordre, l'adresse du serveur \emph{Chatty} auquel se connecter, puis le numéro de port correspondant. Exemple d'utilisation :
+    
+    \code{\$ chattyClient 0.0.0.0 4444}
+    
+    Une fois le client lancé avec l'adresse et le port du serveur déjà démarré auparavant, la communication est établie. Le serveur prend la parole en premier, envoie au client un message que l'utilisateur lui donne dans le terminal, puis se met en attente d'une réponse de la part du client. Le client, lui, commence par attendre un message en provenance du serveur. Après réception de celui-ci, le client sollicite son utilisateur pour envoyer un message de réponse au serveur.
     
     Les deux entités et utilisateurs peuvent ainsi s'échanger des messages en alternance, jusqu'à ce que l'un d'eux décide de mettre fin à la communication. Le message à envoyer pour terminer le dialogue est \code{``bye''} (sans guillemets). Pour le client, cela correspond à la terminaison du processus lui-même. Pour le serveur, par contre, cela correspond uniquement à la fin d'une conversation, et le programme se met alors en attente d'une nouvelle connexion par un autre client. Le serveur ne se termine que si l'utilisateur tue le programme manuellement, par exemple à l'aide du signal système envoyé depuis le terminal à l'aide de la combinaison \code{Ctrl-C}.
     
-    Une quatrième et dernière classe, \code{Main}, optionnellement remplace les autres classes comme point de départ du programme Serveur ou Client : en fonction du nom de l'exécutable (\code{args[0]}), la fonction \code{Main.main} appelle le code permettant de lancer le serveur (\code{chattyServer}) ou le client (\code{chattyClient}).
-    
-    Les classes \code{ServerDemo} et \code{ClientDemo} peuvent être utilisés pour lancer une simulation basique d'utilisation de cette application : le port du serveur est pré-programmé pour être 4444, et l'adresse correspond au \code{localhost}, c'est-à-dire, le client et le serveur sont supposés être lancés depuis la même machine. Il faut bien sûr lancer le serveur en premier pour ne pas obtenir un échec de connexion lors du lancement prématuré du client.
+    Les classes \code{ServerDemo} et \code{ClientDemo} peuvent être utilisés pour lancer une simulation basique d'utilisation de cette application : le port du serveur est pré-programmé pour être 4444, et l'adresse est \code{0.0.0.0}, et correspond au \code{localhost}, c'est-à-dire, le client et le serveur sont supposés être lancés depuis la même machine. Il faut bien sûr lancer le serveur en premier pour ne pas obtenir un échec de connexion lors du lancement prématuré du client.
     
     \section{Version Sécurisée : Transmission Chiffrée \\ à l'aide de l'Algorithme AES}
     
-    La structure de la partie ``chat'' de l'application ne diffère pas significativement par rapport à la version précédente.
+    Le comportement de la partie ``chat'' (envoi et réception de messages, utilisation de \code{``bye''} pour terminer la conversation, etc) de cette version de l'application ne diffère pas significativement par rapport à la version précédente.
     
-    La différence est limitée à la gestion d'une clé AES utilisée pour chiffrer les messages : \code{Server.main} et \code{Client.main} attendent un paramètre supplémentaire à la fin, donnant le nom du fichier dans lequel la clé AES est censée être stockée, encodée en base 64.
+    La différence est au niveau de la gestion d'une clé AES utilisée pour chiffrer les messages : \code{Server.main} et \code{Client.main} attendent un paramètre supplémentaire à la fin, donnant le nom du fichier dans lequel la clé AES est censée être stockée, encodée en base 64. Exemple :
     
-    Pour créer une clé AES et l'enregistrer dans un fichier, il y a une nouvelle classe prévue pour cela : \code{KeyMaker}. La fonction \code{KeyMaker.main} attend un unique paramètre correspondant au chemin de fichier à utiliser pour sauvegarder la nouvelle clé à créer.
+    \code{\$ chattyServer 4444 "aeskey.txt"}
     
-    Les messages sont chiffrés de chaque côté à l'aide de la clé récupérée dans le fichier fourni en paramètre. Le programme affiche la version chiffrée et déchiffrée de chaque message des deux côtés. Afin d'éviter des problèmes d'encodage et de transmission des messages chiffrés, ceux-ci sont d'abord encodés en base 64 (armorés) avant d'être transmis de l'autre côté de la socket. Ils sont ensuite décodés sous la forme d'une liste de bytes avant d'être déchiffrés avec la clé AES. Le programme affiche donc cette version ``lisible'' en base 64 de chaque message chiffré.
+    \code{\$ chattyClient 0.0.0.0 4444 "aeskey.txt"}
     
-    Les classes \code{ServerDemo} et \code{ClientDemo} jouent le même rôle que dans la version non chiffrée. La classe \code{KeyMakerDemo} permet de créer une clé et de l'enregistrer dans le fichier \code{./aeskey.txt}. C'est ce fichier qui sera lu par les deux autres classes de la démo pour récupérér la clé de cryptage. Afin de lancer la simulation, il faut donc d'abord exécuter \code{KeyMakerDemo.main} pour créer la clé et son fichier, avant de finalement démarrer le serveur et puis le client, qui pourront à partir de là s'échanger des messages chiffrés à l'aide de l'algorithme AES en utilisant la clé contenue dans \code{./aeskey.txt}.
+    Pour créer une clé AES et l'enregistrer dans un fichier, il y a une nouvelle classe prévue pour cela, qui s'appelle \code{KeyMaker}. Si le premier argument donné au serveur est l'option \code{-k}, cela indique au serveur qu'une nouvelle clé doit être générée, et enregistrée dans le fichier dont le chemin est le dernier paramètre donné. Par exemple :
+    
+    \code{\$ chattyServer -k 4444 "aeskey.txt"}
+    
+    Avec l'option \code{-k}, le serveur crée donc une nouvelle clé AES et l'enregistre ici dans \code{"aeskey.txt"}, avant de lancer le serveur normalement comme dans le cas où l'option \code{-k} n'est pas présente.
+    
+    Les messages sont chiffrés de chaque côté à l'aide de la clé récupérée dans le fichier fourni en paramètre. Afin d'éviter des problèmes d'encodage et de transmission des messages chiffrés, ceux-ci sont d'abord encodés en base 64 (armorés) avant d'être transmis de l'autre côté de la socket. Ils sont ensuite décodés depuis la base 64 sous la forme d'une liste de bytes avant d'être déchiffrés avec la clé AES. Le programme affiche la version chiffrée (encodée en base 64), et la version déchiffrée de chaque message, des deux côtés de la communication, soit en tout quatre affichages pour chaque message individuel.
+    
+    Les classes \code{ServerDemo} et \code{ClientDemo} jouent le même rôle que dans la version non chiffrée : ils simulent l'envoi de messages en local, mais cette fois avec chiffrement. \code{ServerDemo.main} utilise l'option \code{-k} de \code{Server.main} afin de créer la clé et l'enregistrer dans le fichier de démo \code{./aeskey.txt}. Puis le serveur est démarré avec cette clé. Une fois \code{ClientDemo} démarré, les deux processus pourront à partir de là s'échanger des messages chiffrés à l'aide de l'algorithme AES en utilisant la clé contenue dans \code{./aeskey.txt}.
     
     \nopagenum
 \end{document}
+
