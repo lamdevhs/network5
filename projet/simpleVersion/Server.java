@@ -1,10 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketImpl;
 
 public class Server {
 	public static void main(String[] args){
@@ -29,7 +27,6 @@ public class Server {
 				new BufferedReader(
 					new InputStreamReader(System.in));
 		while (true) this.chat(keyboard);
-		//keyboard.close();
 	}
 	
 	public void chat(BufferedReader keyboard){

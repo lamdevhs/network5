@@ -2,10 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Scanner;
 
 public class U {
 	public static void chat(Socket socket, BufferedReader keyboard, String otherSide, boolean sendFirst) throws IOException {
@@ -36,13 +33,17 @@ public class U {
 		String written; // message from the user of this side of the socket (the one executing this code)
 		System.out.print("myself: ");
 		written = keyboard.readLine();
-		if (written == null || written.compareTo("bye") == 0) {
+		if (written == null) {
 			System.out.println("--- End of conversation.");
 			return false; // break loop of conversation
 		}
 		else {
 			writer.println(written);
-			return true;
+			if (written.compareTo("bye") == 0) {
+				System.out.println("--- End of conversation.");
+				return false; // break loop of conversation
+			}
+			else return true;
 		}
 
 	}
@@ -50,13 +51,17 @@ public class U {
 	public static boolean receiveMessage(BufferedReader reader, String otherSide) throws IOException {
 		String received; // message from the other side of the socket
 		received = reader.readLine();
-		if (received == null || received.compareTo("bye") == 0) {
+		if (received == null) {
 			System.out.println("--- " + otherSide + " ended the conversation.");
 			return false; // break loop of conversation
 		}
 		else {
 			System.out.println(otherSide + " said: " + received);
-			return true;
+			if (received.compareTo("bye") == 0) {
+				System.out.println("--- " + otherSide + " ended the conversation.");
+				return false; // break loop of conversation
+			}
+			else return true;
 		}
 	}
 }

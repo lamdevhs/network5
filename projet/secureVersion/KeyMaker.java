@@ -6,9 +6,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 
 public class KeyMaker {
-	public static void main(String[] args) throws NoSuchAlgorithmException {
-		KeyMaker.saveKey(args[1], KeyMaker.newKey());
-	}
 	
 	public static Key newKey() throws NoSuchAlgorithmException {
 		return KeyGenerator.getInstance("AES").generateKey();

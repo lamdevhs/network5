@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Base64;
+
+import javax.xml.bind.DatatypeConverter;
 
 public class U {
 	
@@ -37,8 +38,8 @@ public class U {
 		String written; // message from the user of this side of the socket (the one executing this code)
 		System.out.print("myself: ");
 		written = keyboard.readLine();
-		if (written == null || written.compareTo("bye") == 0) {
-			System.out.println("--- End of conversation.");
+		if (written == null) {
+			System.out.println("--- User Keyboard sent `null`: End of conversation.");
 			return false; // break loop of conversation
 		}
 		else {
@@ -46,7 +47,11 @@ public class U {
 			String toSend = U.toBase64(encrypted);
 			System.out.println("--> sending: " + toSend);
 			writer.println(toSend);
-			return true;
+			if (written.compareTo("bye") == 0) {
+				System.out.println("--- End of conversation.");
+				return false; // break loop of conversation
+			}
+			else return true;
 		}
 
 	}
@@ -54,18 +59,24 @@ public class U {
 	public static boolean receiveMessage(Security security, BufferedReader reader, String otherSide) throws IOException {
 		String received; // message from the other side of the socket
 		received = reader.readLine();
-		if (received == null) { // @@@@@@@ || decrypted.compareTo("bye") == 0) {
-			System.out.println("--- " + otherSide + " ended the conversation.");
+		if (received == null) {
+			System.out.println("--- " + otherSide + " sent null: ended the conversation.");
 			return false; // break loop of conversation
 		}
 		else {
 			System.out.println(otherSide + " sent: " + received);
 			byte[] encrypted = U.fromBase64(received);
-			byte[] decrypted = security.decrypt(encrypted);
-			System.out.println(otherSide + " said: " + new String(decrypted));
-			return true;
+			String decrypted = new String(security.decrypt(encrypted));
+			System.out.println(otherSide + " said: " + decrypted);
+			if (decrypted.compareTo("bye") == 0) {
+				System.out.println("--- " + otherSide + " ended the conversation.");
+				return false;
+			}
+			else return true;
 		}
 	}
+	
+	/*//for java 8: uses java.util.Base64
 	
 	public static String toBase64(byte[] str) {
 		return Base64.getEncoder().encodeToString(str);
@@ -73,6 +84,16 @@ public class U {
 	
 	public static byte[] fromBase64(String str) {
 		return Base64.getDecoder().decode(str);
+	}
+	
+	*/
+	
+	public static String toBase64(byte[] str) {
+		return DatatypeConverter.printBase64Binary(str);
+	}
+	
+	public static byte[] fromBase64(String str) {
+		return DatatypeConverter.parseBase64Binary(str);
 	}
 	
 	public static void writeToFile(String path, String content) throws IOException {
